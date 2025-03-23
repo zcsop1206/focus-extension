@@ -25,7 +25,7 @@ script.onload = async function () {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
     video.srcObject = stream;
-    console.log("Webcam started.");
+    console.log("Webcam started. Video element source:", video.srcObject);
   } catch (error) {
     console.error("Error accessing webcam:", error);
     return;
@@ -42,6 +42,8 @@ script.onload = async function () {
     while (true) {
       try {
         const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
+        console.log("Detection result:", detections);
+
         if (detections) {
           const { x, y } = detections.detection.box;
           console.log("Face detected at:", { x, y });
@@ -69,13 +71,15 @@ script.onload = async function () {
 function applyBionicReading() {
   console.log("Applying bionic reading...");
   document.querySelectorAll("p, span, div").forEach(el => {
-    el.innerHTML = el.innerHTML.replace(/\b(\w{2,})/g, "<b>$1</b>");
+    console.log("Modifying element:", el);
+    el.innerHTML = el.innerHTML.replace(/\b(\w{2,})/g, "<b style='color: red;'>$1</b>");
   });
 }
 
 function resetText() {
   console.log("Resetting text to original...");
   document.querySelectorAll("b").forEach(el => {
+    console.log("Resetting element:", el);
     el.outerHTML = el.innerHTML;
   });
 }
