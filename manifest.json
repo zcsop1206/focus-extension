@@ -16,7 +16,7 @@
     ],
     "web_accessible_resources": [
       {
-        "resources": ["libs/webgazer.js", "libs/webgazer-init.js"],
+        "resources": ["libs/webgazer.js", "libs/webgazer-init.js", "libs/webgazer-calibration.js"],
         "matches": ["<all_urls>"]
       }
     ],
