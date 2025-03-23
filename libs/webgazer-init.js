@@ -36,11 +36,13 @@ window.webgazer.setGazeListener((data, timestamp) => {
   function startCalibration(onComplete) {
     const calibrationPoints = [];
     const gridSize = 5; // 5x5 grid
+    const margin = 5; // Margin in percentage to prevent points from touching the edges
+  
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
         calibrationPoints.push({
-          x: `${(i / (gridSize - 1)) * 100}%`,
-          y: `${(j / (gridSize - 1)) * 100}%`,
+          x: `${margin + (i * (100 - 2 * margin)) / (gridSize - 1)}%`,
+          y: `${margin + (j * (100 - 2 * margin)) / (gridSize - 1)}%`,
         });
       }
     }
