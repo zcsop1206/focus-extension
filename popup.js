@@ -1,10 +1,10 @@
 document.getElementById("start").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: () => {
-        webgazer.begin();
-        console.log("Eye tracking started.");
+    chrome.tabs.sendMessage(tabs[0].id, { action: "startWebGazer" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error starting WebGazer:", chrome.runtime.lastError.message);
+      } else {
+        console.log("WebGazer started:", response);
       }
     });
   });
@@ -12,11 +12,11 @@ document.getElementById("start").addEventListener("click", () => {
 
 document.getElementById("stop").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: () => {
-        webgazer.end();
-        console.log("Eye tracking stopped.");
+    chrome.tabs.sendMessage(tabs[0].id, { action: "stopWebGazer" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error stopping WebGazer:", chrome.runtime.lastError.message);
+      } else {
+        console.log("WebGazer stopped:", response);
       }
     });
   });
