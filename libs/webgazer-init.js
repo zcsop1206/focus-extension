@@ -26,7 +26,7 @@ window.webgazer.setGazeListener((data, timestamp) => {
     console.warn("WebGazer video feed not found.");
   }
   
-  // Calibration process
+  // Rigorous Calibration Process
   function startCalibration() {
     const calibrationPoints = [
       { x: "10%", y: "10%" },
@@ -65,14 +65,21 @@ window.webgazer.setGazeListener((data, timestamp) => {
       calibrationPoint.style.top = point.y;
       calibrationPoint.style.transform = "translate(-50%, -50%)";
   
+      let clickCount = 0; // Require multiple clicks for each point
+      const requiredClicks = 5;
+  
       calibrationPoint.addEventListener("click", () => {
-        console.log(`Calibration point clicked at (${point.x}, ${point.y})`);
+        clickCount++;
+        console.log(`Calibration point clicked at (${point.x}, ${point.y}) - Click ${clickCount}/${requiredClicks}`);
         window.webgazer.recordScreenPosition(
-          parseInt(point.x, 10),
-          parseInt(point.y, 10)
+          parseInt(window.innerWidth * (parseFloat(point.x) / 100), 10),
+          parseInt(window.innerHeight * (parseFloat(point.y) / 100), 10)
         );
-        calibrationPoint.style.backgroundColor = "green";
-        setTimeout(() => calibrationPoint.remove(), 500);
+  
+        if (clickCount >= requiredClicks) {
+          calibrationPoint.style.backgroundColor = "green";
+          setTimeout(() => calibrationPoint.remove(), 500);
+        }
       });
   
       calibrationContainer.appendChild(calibrationPoint);

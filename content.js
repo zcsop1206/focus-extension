@@ -18,10 +18,13 @@ if (!window.webGazerInjected) {
     let lastFocusedElement = null;
     let lostFocusTimeout = null;
   
-    // Listen for gaze data from the page context
-    window.addEventListener('webgazer-data', (event) => {
-      const data = event.detail;
-      handleGaze(data);
+    // Start focus tracking only after calibration is complete
+    window.addEventListener('calibration-complete', () => {
+      console.log("Starting focus tracking after calibration...");
+      window.addEventListener('webgazer-data', (event) => {
+        const data = event.detail;
+        handleGaze(data);
+      });
     });
   
     function handleGaze(data) {
