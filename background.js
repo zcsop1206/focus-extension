@@ -1,7 +1,9 @@
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.scripting.executeScript({
-      target: { allFrames: true },
-      files: ["content.js"]
-    });
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === "complete" && tab.active) {
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ["content.js"]
+      });
+    }
   });
   
