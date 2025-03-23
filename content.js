@@ -58,10 +58,23 @@ if (!window.webGazerInjected) {
       console.log("Applying bionic reading to:", element);
   
       // Avoid reapplying bionic reading to already bolded text
-      element.innerHTML = element.innerHTML.replace(
-        /\b(?!<b[^>]*>)(\w{2,})(?!<\/b>)/g, // Match words not already inside <b> tags
-        "<b style='color: red;'>$1</b>"
-      );
+      element.childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          // Only process plain text nodes
+          const updatedText = node.textContent.replace(
+            /\b(?!<b[^>]*>)(\w{2,})(?!<\/b>)/g, // Match words not already inside <b> tags
+            "<b style='color: red;'>$1</b>"
+          );
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = updatedText;
+  
+          // Replace the text node with the processed content
+          while (tempDiv.firstChild) {
+            element.insertBefore(tempDiv.firstChild, node);
+          }
+          element.removeChild(node);
+        }
+      });
     }
   
     function resetText(element) {
