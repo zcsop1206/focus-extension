@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Focus Tracker for Neurodivergent Readers",
+    "version": "1.0",
+    "description": "Detects loss of focus and temporarily converts text to Bionic Reading font.",
+    "permissions": ["activeTab", "storage", "scripting"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "css": ["styles.css"]
+      }
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    }
+  }
+  
