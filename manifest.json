@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
-    "name": "Focus Tracker for Neurodivergent Readers",
+    "name": "Focus Extension",
     "version": "1.0",
-    "description": "Detects loss of focus and temporarily converts text to Bionic Reading font.",
-    "permissions": ["activeTab", "storage", "scripting"],
+    "description": "An extension that uses WebGazer.js for eye-tracking and applies bionic reading.",
+    "permissions": ["scripting", "tabs", "activeTab"],
     "host_permissions": ["<all_urls>"],
     "background": {
       "service_worker": "background.js"
@@ -11,12 +11,21 @@
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "js": ["content.js"],
-        "css": ["styles.css"]
+        "js": ["content.js"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["content.js"],
+        "matches": ["<all_urls>"]
       }
     ],
     "action": {
-      "default_popup": "popup.html"
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      }
     }
   }
-  

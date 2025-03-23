@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Focus Tracker</title>
-  <style>body { font-family: Arial, sans-serif; }</style>
+  <title>Focus Extension</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+    }
+    button {
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h3>Focus Tracker Settings</h3>
-  <label><input type="checkbox" id="enableTracking"> Enable Tracking</label>
+  <h1>Focus Extension</h1>
+  <button id="start">Start Eye Tracking</button>
+  <button id="stop">Stop Eye Tracking</button>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -1,85 +1,64 @@
-// Load face-api.js
-const script = document.createElement('script');
-script.src = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js";
-document.head.appendChild(script);
+// Load WebGazer.js
+const webGazerScript = document.createElement('script');
+webGazerScript.src = "https://webgazer.cs.brown.edu/webgazer.js";
+document.head.appendChild(webGazerScript);
 
-script.onload = async function () {
-  console.log("face-api.js loaded successfully.");
+webGazerScript.onload = async function () {
+  console.log("WebGazer.js loaded successfully.");
 
-  await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/");
-  console.log("TinyFaceDetector model loaded.");
+  // Start WebGazer
+  await webgazer.setGazeListener((data, timestamp) => {
+    if (data) {
+      handleGaze(data);
+    }
+  }).begin();
 
-  await faceapi.nets.faceLandmark68TinyNet.loadFromUri("https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/");
-  console.log("FaceLandmark68TinyNet model loaded.");
+  console.log("WebGazer started.");
+  
+  // Make the WebGazer video feed visible for debugging
+  webgazer.showVideoPreview(true).showPredictionPoints(true);
 
-  // Start webcam
-  const video = document.createElement("video");
-  document.body.appendChild(video);
-  video.style.position = "fixed";
-  video.style.bottom = "10px";
-  video.style.right = "10px";
-  video.style.width = "200px"; // Make the video feed visible for debugging
-  video.style.zIndex = "1000";
-  video.style.border = "2px solid red";
+  let lastFocusedElement = null;
+  let lostFocusTimeout = null;
 
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-    video.srcObject = stream;
-    console.log("Webcam started. Video element source:", video.srcObject);
-  } catch (error) {
-    console.error("Error accessing webcam:", error);
-    return;
-  }
+  function handleGaze(data) {
+    const x = data.x; // Gaze X-coordinate
+    const y = data.y; // Gaze Y-coordinate
 
-  video.onloadedmetadata = () => {
-    video.play();
-    console.log("Video feed started.");
-    trackFocus();
-  };
+    // Find the element under the gaze point
+    const element = document.elementFromPoint(x, y);
 
-  async function trackFocus() {
-    console.log("Starting focus tracking...");
-    while (true) {
-      try {
-        const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
-        console.log("Detection result:", detections);
+    if (element && (element.tagName === "P" || element.tagName === "SPAN" || element.tagName === "DIV")) {
+      if (lastFocusedElement !== element) {
+        console.log("Focused on new element:", element);
+        lastFocusedElement = element;
 
-        if (detections) {
-          const { x, y } = detections.detection.box;
-          console.log("Face detected at:", { x, y });
-
-          if (x < 50 || x > 300 || y < 50 || y > 300) {
-            console.log("Face out of focus. Applying bionic reading...");
-            applyBionicReading();
-            setTimeout(() => {
-              console.log("Resetting text...");
-              resetText();
-            }, 2000); // Revert after 2s
-          }
-        } else {
-          console.log("No face detected.");
+        // Clear the lost focus timeout if the user is focused
+        if (lostFocusTimeout) {
+          clearTimeout(lostFocusTimeout);
+          lostFocusTimeout = null;
         }
-      } catch (error) {
-        console.error("Error during face detection:", error);
       }
-
-      await new Promise(r => setTimeout(r, 1000)); // Check every second
+    } else {
+      // If the user is not focused on a valid element, start the lost focus timer
+      if (!lostFocusTimeout) {
+        lostFocusTimeout = setTimeout(() => {
+          console.log("User lost focus. Applying bionic reading...");
+          if (lastFocusedElement) {
+            applyBionicReading(lastFocusedElement);
+          }
+        }, 2000); // Trigger after 2 seconds of lost focus
+      }
     }
   }
+
+  function applyBionicReading(element) {
+    console.log("Applying bionic reading to:", element);
+    element.innerHTML = element.innerHTML.replace(/\b(\w{2,})/g, "<b style='color: red;'>$1</b>");
+  }
+
+  function resetText(element) {
+    console.log("Resetting text for:", element);
+    element.innerHTML = element.innerHTML.replace(/<b style='color: red;'>(.*?)<\/b>/g, "$1");
+  }
 };
-
-function applyBionicReading() {
-  console.log("Applying bionic reading...");
-  document.querySelectorAll("p, span, div").forEach(el => {
-    console.log("Modifying element:", el);
-    el.innerHTML = el.innerHTML.replace(/\b(\w{2,})/g, "<b style='color: red;'>$1</b>");
-  });
-}
-
-function resetText() {
-  console.log("Resetting text to original...");
-  document.querySelectorAll("b").forEach(el => {
-    console.log("Resetting element:", el);
-    el.outerHTML = el.innerHTML;
-  });
-}
