@@ -1,4 +1,3 @@
-// Prevent duplicate execution
 if (!window.webGazerInjected) {
     window.webGazerInjected = true;
   
@@ -8,17 +7,9 @@ if (!window.webGazerInjected) {
     webGazerScript.onload = () => {
       console.log("WebGazer.js loaded successfully.");
   
-      // Inject a script to initialize WebGazer in the page context
+      // Inject the initialization script
       const initScript = document.createElement('script');
-      initScript.textContent = `
-        window.webgazer.setGazeListener((data, timestamp) => {
-          if (data) {
-            window.dispatchEvent(new CustomEvent('webgazer-data', { detail: data }));
-          }
-        }).begin();
-        console.log("WebGazer started in page context.");
-        window.webgazer.showVideoPreview(true).showPredictionPoints(true);
-      `;
+      initScript.src = chrome.runtime.getURL("libs/webgazer-init.js");
       document.head.appendChild(initScript);
     };
   
@@ -74,7 +65,7 @@ if (!window.webGazerInjected) {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === "startWebGazer") {
         const startScript = document.createElement('script');
-        startScript.textContent = `window.webgazer.begin(); console.log("WebGazer started.");`;
+        startScript.src = chrome.runtime.getURL("libs/webgazer-init.js");
         document.head.appendChild(startScript);
       } else if (message.action === "stopWebGazer") {
         const stopScript = document.createElement('script');

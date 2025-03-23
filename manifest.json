@@ -16,9 +16,9 @@
     ],
     "web_accessible_resources": [
       {
-        "resources": ["libs/webgazer.js"],
+        "resources": ["libs/webgazer.js", "libs/webgazer-init.js"],
         "matches": ["<all_urls>"]
-    }
+      }
     ],
     "action": {
       "default_popup": "popup.html",
