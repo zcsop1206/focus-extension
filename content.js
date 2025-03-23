@@ -29,7 +29,10 @@ if (!window.webGazerInjected) {
       window.addEventListener('webgazer-data', (event) => {
         const data = event.detail;
         if (data) {
+          console.log("Gaze data received:", data);
           handleGaze(data);
+        } else {
+          console.warn("No gaze data received.");
         }
       });
     });
@@ -37,6 +40,14 @@ if (!window.webGazerInjected) {
     function handleGaze(data) {
       const x = data.x;
       const y = data.y;
+  
+      // Validate gaze data
+      if (x == null || y == null) {
+        console.warn("Invalid gaze data received:", data);
+        return;
+      }
+  
+      console.log(`Gaze coordinates: (${x}, ${y})`);
   
       // Add the current gaze point to the history
       gazeHistory.push({ x, y });
@@ -49,6 +60,8 @@ if (!window.webGazerInjected) {
       // Calculate the average gaze point
       const avgX = gazeHistory.reduce((sum, point) => sum + point.x, 0) / gazeHistory.length;
       const avgY = gazeHistory.reduce((sum, point) => sum + point.y, 0) / gazeHistory.length;
+  
+      console.log(`Smoothed gaze coordinates: (${avgX}, ${avgY})`);
   
       const element = document.elementFromPoint(avgX, avgY);
   
@@ -107,10 +120,12 @@ if (!window.webGazerInjected) {
     // Listen for messages from popup or background scripts
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === "startWebGazer") {
+        console.log("Starting WebGazer...");
         const startScript = document.createElement('script');
         startScript.src = chrome.runtime.getURL("libs/webgazer-init.js");
         document.head.appendChild(startScript);
       } else if (message.action === "stopWebGazer") {
+        console.log("Stopping WebGazer...");
         const stopScript = document.createElement('script');
         stopScript.textContent = `window.webgazer.end(); console.log("WebGazer stopped.");`;
         document.head.appendChild(stopScript);
