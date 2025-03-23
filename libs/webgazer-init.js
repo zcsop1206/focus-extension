@@ -1,13 +1,19 @@
 // Initialize WebGazer
 window.webgazer.setGazeListener((data, timestamp) => {
     if (data) {
-      window.dispatchEvent(new CustomEvent('webgazer-data', { detail: data }));
+      const smoothedData = window.webgazer.getCurrentPrediction(); // Get smoothed gaze data
+      if (smoothedData) {
+        window.dispatchEvent(new CustomEvent('webgazer-data', { detail: smoothedData }));
+      }
     }
   }).begin()
     .then(() => {
       console.log("WebGazer started in page context.");
       window.webgazer.showVideoPreview(true).showPredictionPoints(true); // Enable prediction points
-      startCalibration(); // Start calibration process
+      startCalibration(() => {
+        console.log("Calibration complete. Starting focus tracking...");
+        window.dispatchEvent(new Event('calibration-complete')); // Notify that calibration is complete
+      });
     })
     .catch((error) => {
       console.error("Error starting WebGazer:", error);
@@ -27,18 +33,17 @@ window.webgazer.setGazeListener((data, timestamp) => {
   }
   
   // Rigorous Calibration Process
-  function startCalibration() {
-    const calibrationPoints = [
-      { x: "10%", y: "10%" },
-      { x: "50%", y: "10%" },
-      { x: "90%", y: "10%" },
-      { x: "10%", y: "50%" },
-      { x: "50%", y: "50%" },
-      { x: "90%", y: "50%" },
-      { x: "10%", y: "90%" },
-      { x: "50%", y: "90%" },
-      { x: "90%", y: "90%" },
-    ];
+  function startCalibration(onComplete) {
+    const calibrationPoints = [];
+    const gridSize = 5; // 5x5 grid
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        calibrationPoints.push({
+          x: `${(i / (gridSize - 1)) * 100}%`,
+          y: `${(j / (gridSize - 1)) * 100}%`,
+        });
+      }
+    }
   
     const calibrationContainer = document.createElement("div");
     calibrationContainer.id = "calibration-container";
@@ -93,6 +98,9 @@ window.webgazer.setGazeListener((data, timestamp) => {
         calibrationContainer.remove();
         observer.disconnect();
         console.log("Calibration complete.");
+        if (typeof onComplete === "function") {
+          onComplete(); // Call the callback function after calibration is complete
+        }
       }
     });
   

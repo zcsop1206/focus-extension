@@ -10,6 +10,9 @@ if (!window.webGazerInjected) {
       // Inject the initialization script
       const initScript = document.createElement('script');
       initScript.src = chrome.runtime.getURL("libs/webgazer-init.js");
+      initScript.onload = () => {
+        console.log("WebGazer initialization script loaded.");
+      };
       document.head.appendChild(initScript);
     };
   
@@ -17,20 +20,37 @@ if (!window.webGazerInjected) {
   
     let lastFocusedElement = null;
     let lostFocusTimeout = null;
+    let gazeHistory = []; // Store recent gaze points
+    const maxHistoryLength = 10; // Number of points to average for stabilization
   
     // Start focus tracking only after calibration is complete
     window.addEventListener('calibration-complete', () => {
-      console.log("Starting focus tracking after calibration...");
+      console.log("Calibration complete. Starting focus tracking...");
       window.addEventListener('webgazer-data', (event) => {
         const data = event.detail;
-        handleGaze(data);
+        if (data) {
+          handleGaze(data);
+        }
       });
     });
   
     function handleGaze(data) {
       const x = data.x;
       const y = data.y;
-      const element = document.elementFromPoint(x, y);
+  
+      // Add the current gaze point to the history
+      gazeHistory.push({ x, y });
+  
+      // Remove the oldest point if the history exceeds the maximum length
+      if (gazeHistory.length > maxHistoryLength) {
+        gazeHistory.shift();
+      }
+  
+      // Calculate the average gaze point
+      const avgX = gazeHistory.reduce((sum, point) => sum + point.x, 0) / gazeHistory.length;
+      const avgY = gazeHistory.reduce((sum, point) => sum + point.y, 0) / gazeHistory.length;
+  
+      const element = document.elementFromPoint(avgX, avgY);
   
       if (element && (element.tagName === "P" || element.tagName === "SPAN" || element.tagName === "DIV")) {
         if (lastFocusedElement !== element) {
